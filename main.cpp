@@ -1,11 +1,11 @@
 #include "header.h"
 
-int ReadFromFile(const char filename[], const char ** index, size_t max_lines, size_t *nStrings);
+int ReadFromFile(const char filename[], char ** index, size_t max_lines, size_t *nStrings);
 
-void PrintStrings(const char ** index_ptr, size_t nStrings);
+void PrintStrings(char ** index_ptr, size_t nStrings);
 
 int CompareUp(const int a, const int b);
-int CompareAlpha(const char * str1, const char * str2);
+int CompareAlpha(const void * Str1, const void * Str2);
 
 const size_t MAX_LEN_LINE = 5000;
 const size_t MAX_N_LINES = 100;
@@ -14,15 +14,26 @@ const char OneginFilename[] = "onegin.txt";
 
 int main() {
 
-    const char * index[MAX_N_LINES] = {};
+    char * index[MAX_N_LINES] = {};
     size_t nLinesOnegin = 0;
     int reading_result = ReadFromFile(OneginFilename, index, MAX_LEN_LINE, &nLinesOnegin);
     if (reading_result == errno) return errno;
+    
+    //for (size_t i = 0; i < nLinesOnegin; i++) printf("%s", index[i]);
 
+    printf("дн------------------------\n");
     PrintStrings(index, nLinesOnegin);
+    printf("---------------------------\n");
+    QuickSort(index, 0, nLinesOnegin-1, CompareAlpha);
+    printf("оняке-------------------------\n");
+    PrintStrings(index, nLinesOnegin);
+    printf("-------------------------------------\n");
 }
 
-int CompareAlpha(const char * str1, const char * str2) {
+int CompareAlpha(const void * Str1, const void * Str2) {
+
+    const char * str1 = (const char *)Str1;
+    const char * str2 = (const char *)Str2;
 
     ASSERT(str1);
     ASSERT(str2);
@@ -61,7 +72,6 @@ int CompareUp(const int a, const int b) {
 
     ASSERT(a);
     ASSERT(b);
-    ASSERT((a != b));
 
     // int A = *((const int *)a);
     // int B = *((const int *)b);
@@ -69,7 +79,7 @@ int CompareUp(const int a, const int b) {
     return (a-b);
 }
 
-int ReadFromFile(const char filename[], const char ** index_ptr, size_t max_len, size_t *nStrings) {
+int ReadFromFile(const char filename[], char ** index_ptr, size_t max_len, size_t *nStrings) {
 
     ASSERT(filename);
     ASSERT(index_ptr);
@@ -89,7 +99,7 @@ int ReadFromFile(const char filename[], const char ** index_ptr, size_t max_len,
     return 1;
 }
 
-void PrintStrings(const char ** index_ptr, size_t nStrings) {
+void PrintStrings(char ** index_ptr, size_t nStrings) {
 
     ASSERT(index_ptr);
     ASSERT(*index_ptr);

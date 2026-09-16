@@ -55,8 +55,8 @@
 
 void MY_LOGGING(const char * fileName, const char *funcName, unsigned int nLine, const char * format, ...);
 
-void QuickSort(int * data, int leftIndex, int rightIndex, int (*Compare)(const void* a, const void* b));
-void ChangeValues(int * firstElem, int * secondElem);
+void QuickSort(char ** data, int leftIndex, int rightIndex, int (*Compare)(const void* a, const void* b));
+void ChangePointers(char ** firstElem, char ** secondElem);
 
 int MyPuts(const char string[]);
 size_t MyStrcpy(const char from[], char to[], size_t SizeOfTo);
