@@ -4,6 +4,9 @@ int ReadFromFile(const char filename[], const char ** index, size_t max_lines, s
 
 void PrintStrings(const char ** index_ptr, size_t nStrings);
 
+int CompareUp(const int a, const int b);
+int CompareAlpha(const char * str1, const char * str2);
+
 const size_t MAX_LEN_LINE = 5000;
 const size_t MAX_N_LINES = 100;
 
@@ -17,7 +20,53 @@ int main() {
     if (reading_result == errno) return errno;
 
     PrintStrings(index, nLinesOnegin);
-    printf("\n%u\n", nLinesOnegin);
+}
+
+int CompareAlpha(const char * str1, const char * str2) {
+
+    ASSERT(str1);
+    ASSERT(str2);
+
+    size_t i = 0, j = 0;
+
+    size_t LenStr1 = strlen(str1);
+    size_t LenStr2 = strlen(str2);
+
+    while ((str1[i] != '\0') && (str2[j] != '\0')) {
+
+        ASSERT((i < LenStr1));
+        ASSERT((j < LenStr2));
+
+        if (!isalpha(str1[i])) {
+            i++;
+            continue;
+        }
+        if (!isalpha(str2[j])) {
+            j++;
+            continue;
+        }
+
+        int comp = CompareUp(tolower(str1[i]), tolower(str2[j]));
+        
+        if (comp != 0) return comp;
+
+        i++;
+        j++;
+    }
+
+    return 0;
+}
+
+int CompareUp(const int a, const int b) {
+
+    ASSERT(a);
+    ASSERT(b);
+    ASSERT((a != b));
+
+    // int A = *((const int *)a);
+    // int B = *((const int *)b);
+
+    return (a-b);
 }
 
 int ReadFromFile(const char filename[], const char ** index_ptr, size_t max_len, size_t *nStrings) {

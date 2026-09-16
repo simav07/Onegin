@@ -3,6 +3,7 @@
 
 #include "C:\TX\TXLib.h"
 #include <stdio.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <time.h>
 #include <assert.h>
