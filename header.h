@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <time.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <errno.h>
 
 //---------------------------------------------------------------------------------------
 // Colors
@@ -54,5 +56,15 @@ void MY_LOGGING(const char * fileName, const char *funcName, unsigned int nLine,
 
 void QuickSort(int * data, int leftIndex, int rightIndex, int (*Compare)(const void* a, const void* b));
 void ChangeValues(int * firstElem, int * secondElem);
+
+int MyPuts(const char string[]);
+size_t MyStrcpy(const char from[], char to[], size_t SizeOfTo);
+int MyStrcat(char MainString[], const char AddString[], int SizeOfMainString);
+int MyStrcmp(const char FirstStr[], const char SecondStr[]);
+char * MyStrdup(const char FromLine[]);
+const char * MyStrchr(const char string[], int chr_symb);
+const char * MyStrrchr(const char string[], int chr_symb);
+int MyStrlen(const char string[]);
+int MyStrlenP(const char string[]);
 
 #endif

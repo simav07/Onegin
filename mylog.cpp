@@ -7,7 +7,7 @@ const char LOGFILE_NAME[] = "MyLogfile.txt";
 void MY_LOGGING(const char * fileName, const char *funcName, unsigned int nLine,
                     const char * format, ...) {
 
-    ASSERT(fileNmae);
+    ASSERT(fileName);
     ASSERT(funcName);
     ASSERT(format);
 
