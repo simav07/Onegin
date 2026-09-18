@@ -1,6 +1,15 @@
 #include "header.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+
+struct FileStat {
+    off_t sizeInBytes = 0;
+    unsigned int sizeOfElem = sizeof(char);
+};
 
 int ReadFromFile(const char filename[], char ** index, size_t max_lines, size_t *nStrings);
+
+int ReadFile(const char filename[]);
 
 void PrintStrings(char ** index_ptr, size_t nStrings);
 
@@ -15,34 +24,37 @@ const char OneginFilename[] = "onegin.txt";
 
 int main() {
 
-    char * index[MAX_N_LINES] = {};
-    size_t nLinesOnegin = 0;
-    int reading_result = ReadFromFile(OneginFilename, index, MAX_LEN_LINE, &nLinesOnegin);
-    if (reading_result == errno) return errno;
+    ReadFile("onegin.txt");
+    return 0;
+
+    // char * index[MAX_N_LINES] = {};
+    // size_t nLinesOnegin = 0;
+    // int reading_result = ReadFromFile(OneginFilename, index, MAX_LEN_LINE, &nLinesOnegin);
+    // if (reading_result == errno) return errno;
     
 
-    printf("------------------STANDART---------------------\n");
-    PrintStrings(index, nLinesOnegin);
-    printf("--------------------------------------------------\n");
+    // printf("------------------STANDART---------------------\n");
+    // PrintStrings(index, nLinesOnegin);
+    // printf("--------------------------------------------------\n");
 
-    printf(BOLD_YELLOW "------------------AFTER SORT----------------------\n\n" RESET);
-    QuickSort(index, 0, nLinesOnegin-1, CompareAlpha);
-    PrintStrings(index, nLinesOnegin);
-    printf(BOLD_YELLOW "--------------------------------------------------\n" RESET);
+    // printf(BOLD_YELLOW "------------------AFTER SORT----------------------\n\n" RESET);
+    // QuickSort(index, 0, nLinesOnegin-1, CompareAlpha);
+    // PrintStrings(index, nLinesOnegin);
+    // printf(BOLD_YELLOW "--------------------------------------------------\n" RESET);
 
-    printf(BOLD_CYAN "---------------AFTER REVERSE SORT-----------------\n\n" RESET);
-    qsort(index, nLinesOnegin, sizeof(char *), CompareAlphaReverse);
-    PrintStrings(index, nLinesOnegin);
-    printf(BOLD_CYAN "-------------------------------------\n" RESET);
+    // printf(BOLD_CYAN "---------------AFTER REVERSE SORT-----------------\n\n" RESET);
+    // qsort(index, nLinesOnegin, sizeof(char *), CompareAlphaReverse);
+    // PrintStrings(index, nLinesOnegin);
+    // printf(BOLD_CYAN "-------------------------------------\n" RESET);
 }
 
 int CompareAlpha(const void * Str1, const void * Str2) {
 
+    ASSERT(Str1);
+    ASSERT(Str2);
+
     const char * str1 = (const char *)Str1;
     const char * str2 = (const char *)Str2;
-
-    ASSERT(str1);
-    ASSERT(str2);
 
     size_t i = 0, j = 0;
 
@@ -123,6 +135,27 @@ int CompareUp(const int a, const int b) {
     ASSERT(b);
 
     return (a-b);
+}
+
+int ReadFile(const char filename[]) {
+
+    struct _stat fileStat = {};
+    
+    FILE * file_p = fopen(filename, "r");
+
+    if (_stat(filename, &fileStat) == -1) return 0;
+
+    FileStat fileInfo = {.sizeInBytes = fileStat.st_size};
+
+    char * buffer = (char *)calloc(fileInfo.sizeInBytes + (off_t)1, fileInfo.sizeOfElem);
+
+    size_t lastIndex = fread((void *)buffer, fileInfo.sizeOfElem, fileInfo.sizeInBytes, file_p);
+    buffer[lastIndex] = '\0';
+
+    fclose(file_p);
+
+    free(buffer);
+    return 0;
 }
 
 int ReadFromFile(const char filename[], char ** index_ptr, size_t max_len, size_t *nStrings) {
