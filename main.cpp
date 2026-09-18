@@ -20,22 +20,20 @@ int main() {
     int reading_result = ReadFromFile(OneginFilename, index, MAX_LEN_LINE, &nLinesOnegin);
     if (reading_result == errno) return errno;
     
-    //for (size_t i = 0; i < nLinesOnegin; i++) printf("%s", index[i]);
 
     printf("------------------STANDART---------------------\n");
     PrintStrings(index, nLinesOnegin);
-    printf("---------------------------\n");
+    printf("--------------------------------------------------\n");
 
-    QuickSort(index, 0, nLinesOnegin-1, CompareAlpha);
     printf(BOLD_YELLOW "------------------AFTER SORT----------------------\n\n" RESET);
+    QuickSort(index, 0, nLinesOnegin-1, CompareAlpha);
     PrintStrings(index, nLinesOnegin);
-    printf(BOLD_YELLOW "-------------------------------------\n" RESET);
+    printf(BOLD_YELLOW "--------------------------------------------------\n" RESET);
 
     printf(BOLD_CYAN "---------------AFTER REVERSE SORT-----------------\n\n" RESET);
-    QuickSort(index, 0, nLinesOnegin-1, CompareAlphaReverse);
+    qsort(index, nLinesOnegin, sizeof(char *), CompareAlphaReverse);
     PrintStrings(index, nLinesOnegin);
     printf(BOLD_CYAN "-------------------------------------\n" RESET);
-
 }
 
 int CompareAlpha(const void * Str1, const void * Str2) {
@@ -78,20 +76,21 @@ int CompareAlpha(const void * Str1, const void * Str2) {
 
 int CompareAlphaReverse(const void * Str1, const void * Str2) {
 
-    const char * str1 = (const char *)Str1;
-    const char * str2 = (const char *)Str2;
+    ASSERT(Str1);
+    ASSERT(Str2);
 
-    ASSERT(str1);
-    ASSERT(str2);
+    const char * str1 = *(const char **)Str1;
+    const char * str2 = *(const char **)Str2;
 
     int LenStr1 = (int)strlen(str1);
     int LenStr2 = (int)strlen(str2);
+    ASSERT((LenStr1 >= 0));
+    ASSERT((LenStr2 >= 0));
+
+    if ((LenStr1 <= 0) || (LenStr2 <= 0)) return 0;
 
     int i = LenStr1;
     int j = LenStr2;
-    //printf("Strlen1 = %llu, strlen2 = %llu\n", LenStr1, LenStr2);
-    //printf("i = %llu, j = %llu\n", i, j);
-    //printf("Last Elem_1 = <%c>, last elem_2 = <%c>\n", str1[i], str2[j]);
 
     while ((i >= 0) && (j >= 0)) {
 
@@ -106,6 +105,7 @@ int CompareAlphaReverse(const void * Str1, const void * Str2) {
             j--;
             continue;
         }
+        ASSERT((i >= 0 && j >= 0));
 
         int comp = CompareUp(tolower(str1[i]), tolower(str2[j]));
         
@@ -121,9 +121,6 @@ int CompareUp(const int a, const int b) {
 
     ASSERT(a);
     ASSERT(b);
-
-    // int A = *((const int *)a);
-    // int B = *((const int *)b);
 
     return (a-b);
 }
