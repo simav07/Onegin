@@ -1,7 +1,6 @@
 #include "header.h"
 #include <stdarg.h>
 
-//static
 const char LOGFILE_NAME[] = "MyLogfile.txt";
 
 void MY_LOGGING(const char * fileName, const char *funcName, unsigned int nLine,

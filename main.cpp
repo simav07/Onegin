@@ -6,6 +6,7 @@ void PrintStrings(char ** index_ptr, size_t nStrings);
 
 int CompareUp(const int a, const int b);
 int CompareAlpha(const void * Str1, const void * Str2);
+int CompareAlphaReverse(const void * Str1, const void * Str2);
 
 const size_t MAX_LEN_LINE = 5000;
 const size_t MAX_N_LINES = 100;
@@ -21,13 +22,20 @@ int main() {
     
     //for (size_t i = 0; i < nLinesOnegin; i++) printf("%s", index[i]);
 
-    printf("дн------------------------\n");
+    printf("------------------STANDART---------------------\n");
     PrintStrings(index, nLinesOnegin);
     printf("---------------------------\n");
+
     QuickSort(index, 0, nLinesOnegin-1, CompareAlpha);
-    printf("оняке-------------------------\n");
+    printf(BOLD_YELLOW "------------------AFTER SORT----------------------\n\n" RESET);
     PrintStrings(index, nLinesOnegin);
-    printf("-------------------------------------\n");
+    printf(BOLD_YELLOW "-------------------------------------\n" RESET);
+
+    printf(BOLD_CYAN "---------------AFTER REVERSE SORT-----------------\n\n" RESET);
+    QuickSort(index, 0, nLinesOnegin-1, CompareAlphaReverse);
+    PrintStrings(index, nLinesOnegin);
+    printf(BOLD_CYAN "-------------------------------------\n" RESET);
+
 }
 
 int CompareAlpha(const void * Str1, const void * Str2) {
@@ -65,6 +73,47 @@ int CompareAlpha(const void * Str1, const void * Str2) {
         j++;
     }
 
+    return 0;
+}
+
+int CompareAlphaReverse(const void * Str1, const void * Str2) {
+
+    const char * str1 = (const char *)Str1;
+    const char * str2 = (const char *)Str2;
+
+    ASSERT(str1);
+    ASSERT(str2);
+
+    int LenStr1 = (int)strlen(str1);
+    int LenStr2 = (int)strlen(str2);
+
+    int i = LenStr1;
+    int j = LenStr2;
+    //printf("Strlen1 = %llu, strlen2 = %llu\n", LenStr1, LenStr2);
+    //printf("i = %llu, j = %llu\n", i, j);
+    //printf("Last Elem_1 = <%c>, last elem_2 = <%c>\n", str1[i], str2[j]);
+
+    while ((i >= 0) && (j >= 0)) {
+
+        ASSERT((i <= LenStr1));
+        ASSERT((j <= LenStr2));
+
+        if (!isalpha(str1[i])) {
+            i--;
+            continue;
+        }
+        if (!isalpha(str2[j])) {
+            j--;
+            continue;
+        }
+
+        int comp = CompareUp(tolower(str1[i]), tolower(str2[j]));
+        
+        if (comp != 0) return comp;
+
+        i--;
+        j--;
+    }
     return 0;
 }
 
