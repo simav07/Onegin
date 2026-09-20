@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+// All used file information
 struct FileStat {
     char * text_ptr = NULL;
     char ** index = {};
@@ -10,24 +11,22 @@ struct FileStat {
     unsigned int sizeOfElem = sizeof(char);
 };
 
-int ReadFromFile(const char filename[], char ** index, size_t max_lines, size_t *nStrings);
-
+// Fill buffer from file
 int ReadFile(const char filename[], FileStat * fileInfo);
 
+// Get indexes and fill massiv of indexes
+void FillIndexes(FileStat * fileInfo);
 size_t StringsParser(char * buffer, char diffElem, char ** index);
-
 size_t CountElems(const char * string, int Elem);
 
+// Printing
 void PrintStrings(char ** index_ptr, size_t nStrings);
-
 void PrintErrno(const char filename[], int err_inf);
 
+// Comparators
 int CompareUp(const int a, const int b);
 int CompareAlpha(const void * Str1, const void * Str2);
 int CompareAlphaReverse(const void * Str1, const void * Str2);
-
-const int SUCCESS_READ = 0;
-const int BAD_READ     = -1;
 
 const size_t MAX_LEN_LINE = 5000;
 const size_t MAX_N_LINES = 100;
@@ -39,20 +38,11 @@ int main() {
     FileStat fileInfo = {};
 
     int readingResult = ReadFile(OneginFilename, &fileInfo);
-    int err_inf = errno;
-    if (readingResult != SUCCESS_READ) {
-        PrintErrno(OneginFilename, err_inf);
-        return false;
-    }
+
+    if (!readingResult) return false;
+
+    FillIndexes(&fileInfo);
     
-    printf("%s\n", fileInfo.text_ptr);
-
-    fileInfo.nLines = CountElems(fileInfo.text_ptr, '\n');
-
-    char * IndexPtr[fileInfo.nLines] = {};
-    fileInfo.index = IndexPtr;
-
-    StringsParser(fileInfo.text_ptr, '\n', fileInfo.index);
     printf("\nStrings = %llu\n", fileInfo.nLines);
 
     //for (int i = 0; i < fileInfo.nLines; i++) printf("%p\n", fileInfo.index[i]);
@@ -63,7 +53,7 @@ int main() {
     printf("--------------------------------------------------\n");
 
     printf(BOLD_YELLOW "------------------AFTER SORT----------------------\n\n" RESET);
-    QuickSort(fileInfo.index, 0, fileInfo.nLines-1, CompareAlpha);
+    QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
     PrintStrings(fileInfo.index, fileInfo.nLines);
     printf(BOLD_YELLOW "--------------------------------------------------\n" RESET);
 
@@ -80,7 +70,7 @@ size_t StringsParser(char * buffer, char diffElem, char ** index) {
     ASSERT(buffer);
     ASSERT(index);
 
-    char * currPtr = buffer;
+    char * currPtr = (char *)buffer;
     char * lastPtr = strchr(buffer, '\0');
 
     size_t indexPtr = 0;
@@ -103,6 +93,22 @@ size_t StringsParser(char * buffer, char diffElem, char ** index) {
     }
 
     return indexPtr;
+}
+
+void FillIndexes(FileStat * fileInfo) {
+
+    ASSERT(fileInfo);
+    ASSERT((*fileInfo).index);
+    ASSERT((*fileInfo).text_ptr);
+
+    //printf("%s\n", (*fileInfo).text_ptr);
+
+    (*fileInfo).nLines = CountElems((*fileInfo).text_ptr, '\n');
+
+    (*fileInfo).index = (char **)calloc((*fileInfo).nLines, sizeof(char *));
+
+    StringsParser((*fileInfo).text_ptr, '\n', (*fileInfo).index);
+
 }
 
 size_t CountElems(const char * string, int Elem) {
@@ -138,13 +144,13 @@ int CompareAlpha(const void * Str1, const void * Str2) {
 
     size_t i = 0, j = 0;
 
-    size_t LenStr1 = strlen(str1);
-    size_t LenStr2 = strlen(str2);
+    //size_t LenStr1 = strlen(str1);
+    //size_t LenStr2 = strlen(str2);
 
     while ((str1[i] != '\0') && (str2[j] != '\0')) {
 
-        ASSERT((i < LenStr1));
-        ASSERT((j < LenStr2));
+        ASSERT((i < strlen(str1)));
+        ASSERT((j < strlen(str2)));
 
         if (!isalpha(str1[i])) {
             i++;
@@ -163,7 +169,7 @@ int CompareAlpha(const void * Str1, const void * Str2) {
         j++;
     }
 
-    return 0;
+    return false;
 }
 
 int CompareAlphaReverse(const void * Str1, const void * Str2) {
@@ -174,20 +180,20 @@ int CompareAlphaReverse(const void * Str1, const void * Str2) {
     const char * str1 = *(const char **)Str1;
     const char * str2 = *(const char **)Str2;
 
-    int LenStr1 = (int)strlen(str1);
-    int LenStr2 = (int)strlen(str2);
+    size_t LenStr1 = strlen(str1);
+    size_t LenStr2 = strlen(str2);
     ASSERT((LenStr1 >= 0));
     ASSERT((LenStr2 >= 0));
 
     if ((LenStr1 <= 0) || (LenStr2 <= 0)) return 0;
 
-    int i = LenStr1;
-    int j = LenStr2;
+    int i = (int)LenStr1;
+    int j = (int)LenStr2;
 
     while ((i >= 0) && (j >= 0)) {
 
-        ASSERT((i <= LenStr1));
-        ASSERT((j <= LenStr2));
+        ASSERT((i <= (int)LenStr1));
+        ASSERT((j <= (int)LenStr2));
 
         if (!isalpha(str1[i])) {
             i--;
@@ -206,7 +212,7 @@ int CompareAlphaReverse(const void * Str1, const void * Str2) {
         i--;
         j--;
     }
-    return 0;
+    return false;
 }
 
 int CompareUp(const int a, const int b) {
@@ -223,9 +229,10 @@ int ReadFile(const char filename[], FileStat * fileInfo) {
     
     FILE * file_p = fopen(filename, "r");
 
-    if (!file_p) return errno;
-
-    if (_stat(filename, &fileStat) == -1) return errno;
+    if (!file_p || (_stat(filename, &fileStat) == -1)) {
+        PrintErrno(OneginFilename, errno);
+        return false;
+    }
 
     (*fileInfo).sizeInBytes = fileStat.st_size;
 
@@ -239,27 +246,7 @@ int ReadFile(const char filename[], FileStat * fileInfo) {
 
     fclose(file_p);
 
-    return SUCCESS_READ;
-}
-
-int ReadFromFile(const char filename[], char ** index_ptr, size_t max_len, size_t *nStrings) {
-
-    ASSERT(filename);
-    ASSERT(index_ptr);
-
-    FILE * file_p = fopen(filename, "r");
-    if (!file_p) return errno;
-
-    char buffer[MAX_LEN_LINE] = "";
-    size_t curr_line = 0;
-
-    while ((fgets(buffer, (int)max_len, file_p) != NULL) && (curr_line < MAX_N_LINES)) {
-        index_ptr[curr_line++] = MyStrdup(buffer);
-        (*nStrings)++;
-    }
-
-    fclose(file_p);
-    return 1;
+    return true;
 }
 
 void PrintStrings(char ** index_ptr, size_t nStrings) {
