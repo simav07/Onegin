@@ -20,7 +20,7 @@ size_t StringsParser(char * buffer, char diffElem, char ** index);
 size_t CountElems(const char * string, int Elem);
 
 // Printing
-void PrintStrings(char ** index_ptr, size_t nStrings);
+void PrintStrings(FILE * stream, char ** index_ptr, size_t nStrings);
 void PrintErrno(const char filename[], int err_inf);
 
 // Comparators
@@ -28,10 +28,13 @@ int CompareUp(const int a, const int b);
 int CompareAlpha(const void * Str1, const void * Str2);
 int CompareAlphaReverse(const void * Str1, const void * Str2);
 
+void PrintBeautyText(const char filename[], const char title[], FileStat fileInfo);
+
 const size_t MAX_LEN_LINE = 5000;
 const size_t MAX_N_LINES = 100;
 
 const char OneginFilename[] = "onegin.txt";
+const char OutputFilename[] = "OneginV0.html";
 
 int main() {
 
@@ -48,6 +51,14 @@ int main() {
     //for (int i = 0; i < fileInfo.nLines; i++) printf("%p\n", fileInfo.index[i]);
     //return true;
 
+    PrintBeautyText(OutputFilename, "Standard Onegin", fileInfo);
+    QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
+    PrintBeautyText(OutputFilename, "Sorted Onegin", fileInfo);
+    qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
+    PrintBeautyText(OutputFilename, "Reverse-sorted Onegin", fileInfo);
+
+
+    /*
     printf("------------------STANDART---------------------\n");
     PrintStrings(fileInfo.index, fileInfo.nLines);
     printf("--------------------------------------------------\n");
@@ -61,7 +72,7 @@ int main() {
     qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
     PrintStrings(fileInfo.index, fileInfo.nLines);
     printf(BOLD_CYAN "-------------------------------------\n" RESET);
-
+    */
     return true;
 }
 
@@ -249,7 +260,7 @@ int ReadFile(const char filename[], FileStat * fileInfo) {
     return true;
 }
 
-void PrintStrings(char ** index_ptr, size_t nStrings) {
+void PrintStrings(FILE * stream, char ** index_ptr, size_t nStrings) {
 
     ASSERT(index_ptr);
     ASSERT(*index_ptr);
@@ -257,7 +268,27 @@ void PrintStrings(char ** index_ptr, size_t nStrings) {
     for (size_t count = 0; count < nStrings; count++) {
 
         ASSERT(index_ptr[count]);
-        printf("%s\n", index_ptr[count]);
+        fprintf(stream, "%s\n", index_ptr[count]);
 
     }
+}
+
+
+
+void PrintBeautyText(const char filename[], const char title[], FileStat fileInfo) {
+
+    ASSERT(filename);
+    ASSERT(title);
+    ASSERT(text_ptr);
+
+    FILE * file_p = fopen(filename, "a");
+    if (!file_p) return;
+
+    fprintf(file_p, "<pre>\n");
+    fprintf(file_p, "<h1>%s</h1>\n", title);
+    fprintf(file_p, "<p>");
+    PrintStrings(file_p, fileInfo.index, fileInfo.nLines);
+    fprintf(file_p, "</p>\n");
+
+    fclose(file_p);
 }
