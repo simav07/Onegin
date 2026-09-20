@@ -1,0 +1,1 @@
+g++ main.cpp quicksort.cpp mylog.cpp myfuncs.cpp -DMYDEBUG -g -o runcode

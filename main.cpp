@@ -2,6 +2,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+// TODO
+// 1. Logging to .html file
+// 2. Beauty text print to .html
+
 // All used file information
 struct FileStat {
     char * text_ptr = NULL;
@@ -28,6 +32,7 @@ int CompareUp(const int a, const int b);
 int CompareAlpha(const void * Str1, const void * Str2);
 int CompareAlphaReverse(const void * Str1, const void * Str2);
 
+// Cool print
 void PrintBeautyText(const char filename[], const char title[], FileStat fileInfo);
 
 const size_t MAX_LEN_LINE = 5000;
@@ -44,12 +49,7 @@ int main() {
 
     if (!readingResult) return false;
 
-    FillIndexes(&fileInfo);
-    
-    printf("\nStrings = %llu\n", fileInfo.nLines);
-
-    //for (int i = 0; i < fileInfo.nLines; i++) printf("%p\n", fileInfo.index[i]);
-    //return true;
+    // FillIndexes(&fileInfo);
 
     PrintBeautyText(OutputFilename, "Standard Onegin", fileInfo);
     QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
@@ -57,22 +57,6 @@ int main() {
     qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
     PrintBeautyText(OutputFilename, "Reverse-sorted Onegin", fileInfo);
 
-
-    /*
-    printf("------------------STANDART---------------------\n");
-    PrintStrings(fileInfo.index, fileInfo.nLines);
-    printf("--------------------------------------------------\n");
-
-    printf(BOLD_YELLOW "------------------AFTER SORT----------------------\n\n" RESET);
-    QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
-    PrintStrings(fileInfo.index, fileInfo.nLines);
-    printf(BOLD_YELLOW "--------------------------------------------------\n" RESET);
-
-    printf(BOLD_CYAN "---------------AFTER REVERSE SORT-----------------\n\n" RESET);
-    qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
-    PrintStrings(fileInfo.index, fileInfo.nLines);
-    printf(BOLD_CYAN "-------------------------------------\n" RESET);
-    */
     return true;
 }
 
@@ -109,10 +93,7 @@ size_t StringsParser(char * buffer, char diffElem, char ** index) {
 void FillIndexes(FileStat * fileInfo) {
 
     ASSERT(fileInfo);
-    ASSERT((*fileInfo).index);
     ASSERT((*fileInfo).text_ptr);
-
-    //printf("%s\n", (*fileInfo).text_ptr);
 
     (*fileInfo).nLines = CountElems((*fileInfo).text_ptr, '\n');
 
@@ -188,13 +169,11 @@ int CompareAlphaReverse(const void * Str1, const void * Str2) {
     ASSERT(Str1);
     ASSERT(Str2);
 
-    const char * str1 = *(const char **)Str1;
-    const char * str2 = *(const char **)Str2;
+    const char * str1 = *(const char * const *)Str1;
+    const char * str2 = *(const char * const *)Str2;
 
     size_t LenStr1 = strlen(str1);
     size_t LenStr2 = strlen(str2);
-    ASSERT((LenStr1 >= 0));
-    ASSERT((LenStr2 >= 0));
 
     if ((LenStr1 <= 0) || (LenStr2 <= 0)) return 0;
 
@@ -236,6 +215,9 @@ int CompareUp(const int a, const int b) {
 
 int ReadFile(const char filename[], FileStat * fileInfo) {
 
+    ASSERT(filename);
+    ASSERT(fileInfo);
+
     struct _stat fileStat = {};
     
     FILE * file_p = fopen(filename, "r");
@@ -256,6 +238,8 @@ int ReadFile(const char filename[], FileStat * fileInfo) {
     (*fileInfo).text_ptr = buffer;
 
     fclose(file_p);
+
+    FillIndexes(fileInfo);
 
     return true;
 }
@@ -279,14 +263,18 @@ void PrintBeautyText(const char filename[], const char title[], FileStat fileInf
 
     ASSERT(filename);
     ASSERT(title);
-    ASSERT(text_ptr);
+    ASSERT(fileInfo.text_ptr);
+    ASSERT(fileInfo.index);
+    ASSERT(fileInfo.text_ptr);
 
     FILE * file_p = fopen(filename, "a");
     if (!file_p) return;
 
     fprintf(file_p, "<pre>\n");
-    fprintf(file_p, "<h1>%s</h1>\n", title);
-    fprintf(file_p, "<p>");
+    fprintf(file_p, "<hr style=\"border: none; height: 2px; background-color: #333; width: 80%;\">");
+    fprintf(file_p, "<h1 style=\"text-align: center;\">%s</h1>\n", title);
+    fprintf(file_p, "<hr style=\"border: none; height: 2px; background-color: #333; width: 80%;\">");
+    fprintf(file_p, "<p style=\"text-align: center;\">");
     PrintStrings(file_p, fileInfo.index, fileInfo.nLines);
     fprintf(file_p, "</p>\n");
 
