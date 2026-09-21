@@ -36,9 +36,10 @@ void PrintStrings(FILE * stream, char ** index_ptr, size_t nStrings);
 void PrintErrno(const char filename[], int err_inf);
 
 // Comparators
-int CompareUp(const int a, const int b);
+int CompareUp(const size_t a, const size_t b);
 int CompareAlpha(const void * Str1, const void * Str2);
 int CompareAlphaReverse(const void * Str1, const void * Str2);
+int CompareUpPtr(const void * ptr1, const void * ptr2);
 
 // Cool print
 void PrintBeautyText(const char filename[], const char title[], FileStat fileInfo);
@@ -58,12 +59,12 @@ int main(int argc, char * argv[]) {
     int readingResult = ReadFile(fileInfo.readFrom, &fileInfo);
     if (!readingResult) return false;
 
-    PrintBeautyText(fileInfo.printTo, "Standard Onegin", fileInfo);
-    qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
-    PrintBeautyText(fileInfo.printTo, "Sorted Onegin", fileInfo);
     QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
+    PrintBeautyText(fileInfo.printTo, "Sorted Onegin", fileInfo);
+    qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
     PrintBeautyText(fileInfo.printTo, "Reverse-sorted Onegin", fileInfo);
-
+    qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareUpPtr);
+    PrintBeautyText(fileInfo.printTo, "Standard Onegin", fileInfo);
     return true;
 }
 
@@ -241,12 +242,25 @@ int CompareAlphaReverse(const void * Str1, const void * Str2) {
     return i - j;
 }
 
-int CompareUp(const int a, const int b) {
+int CompareUp(const size_t a, size_t  b) {
 
     ASSERT(a);
     ASSERT(b);
 
     return (a-b);
+}
+
+int CompareUpPtr(const void * ptr1, const void * ptr2) {
+    const char * s1 = *(const char * const *)ptr1;
+    const char * s2 = *(const char * const *)ptr2;
+
+    uintptr_t p1 = (uintptr_t)s1;
+    uintptr_t p2 = (uintptr_t)s2;
+
+    if (p1 < p2) return -1;
+    if (p1 > p2) return  1;
+
+    return 0;
 }
 
 int ReadFile(const char filename[], FileStat * fileInfo) {
@@ -308,7 +322,9 @@ void PrintBeautyText(const char filename[], const char title[], FileStat fileInf
 
     fprintf(file_p, "<pre>\n");
     fprintf(file_p, "<hr style=\"border: none; height: 2px; background-color: #333; width: 80%;\">");
-    fprintf(file_p, "<h1 style=\"text-align: center;\">%s</h1>\n", title);
+    fprintf(file_p, "<h1 style=\"text-align: center; font-family: 'Times New Roman', Times, serif; font-size: 38px; "
+                    "font-weight: bold; background: linear-gradient(45deg, #262729, #dee5e4); -webkit-background-clip: text; "
+                    "-webkit-text-fill-color: transparent; background-clip: text;\">%s</h1>\n", title);
     fprintf(file_p, "<hr style=\"border: none; height: 2px; background-color: #333; width: 80%;\">");
     fprintf(file_p, "<p style=\"text-align: center;\">");
     PrintStrings(file_p, fileInfo.index, fileInfo.nLines);
