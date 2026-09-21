@@ -13,7 +13,15 @@ struct FileStat {
     off_t sizeInBytes = 0;
     size_t nLines = 0;
     unsigned int sizeOfElem = sizeof(char);
+    char * readFrom = NULL;
+    char * printTo  = NULL;
 };
+
+// Get filenames from console (stdin)
+int GetFilenameStd(int argc, char * argv[], FileStat * fileInfo);
+
+// Format validation
+int CheckFileFormat(const char filename[], const char exp[]);
 
 // Fill buffer from file
 int ReadFile(const char filename[], FileStat * fileInfo);
@@ -38,26 +46,63 @@ void PrintBeautyText(const char filename[], const char title[], FileStat fileInf
 const size_t MAX_LEN_LINE = 5000;
 const size_t MAX_N_LINES = 100;
 
-const char OneginFilename[] = "onegin.txt";
-const char OutputFilename[] = "OneginV0.html";
+int main(int argc, char * argv[]) {
 
-int main() {
+    ASSERT(argv);
+    ASSERT((argc > 0));
 
     FileStat fileInfo = {};
 
-    int readingResult = ReadFile(OneginFilename, &fileInfo);
-
+    if (!GetFilenameStd(argc, argv, &fileInfo)) return false;
+    
+    int readingResult = ReadFile(fileInfo.readFrom, &fileInfo);
     if (!readingResult) return false;
 
-    // FillIndexes(&fileInfo);
-
-    PrintBeautyText(OutputFilename, "Standard Onegin", fileInfo);
+    PrintBeautyText(fileInfo.printTo, "Standard Onegin", fileInfo);
     QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
-    PrintBeautyText(OutputFilename, "Sorted Onegin", fileInfo);
+    PrintBeautyText(fileInfo.printTo, "Sorted Onegin", fileInfo);
     qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
-    PrintBeautyText(OutputFilename, "Reverse-sorted Onegin", fileInfo);
+    PrintBeautyText(fileInfo.printTo, "Reverse-sorted Onegin", fileInfo);
 
     return true;
+}
+
+int GetFilenameStd(int argc, char * argv[], FileStat * fileInfo) {
+
+    if ((argc == 5) && ((!strcmp(argv[1], "--readfile")  && !strcmp(argv[3], "--printfile")) ||
+                        (!strcmp(argv[1], "--printfile") && !strcmp(argv[3], "--readfile")))) {
+        if (!argv[2] || !argv[4]) return false;
+
+        if (!strcmp(argv[1], "--readfile")  && !strcmp(argv[3], "--printfile")) {
+
+            if (!(CheckFileFormat(argv[4], ".htm") || CheckFileFormat(argv[4], ".html") ||
+                  CheckFileFormat(argv[4], ".txt"))) return false;
+
+            (*fileInfo).readFrom = argv[2];
+            (*fileInfo).printTo  = argv[4];
+
+            return true;
+        }
+
+        if (!CheckFileFormat(argv[2], ".htm") || !CheckFileFormat(argv[2], ".html") ||
+            !CheckFileFormat(argv[2], ".txt")) return false;
+
+        (*fileInfo).readFrom = argv[4];
+        (*fileInfo).printTo  = argv[2];
+        return true;
+    }
+    printf("\nError of reading stdin\n");
+    return false;
+}
+
+int CheckFileFormat(const char filename[], const char exp[]) {
+
+    if (strstr(filename, exp) != NULL) return true;
+    
+    printf(BOLD_RED "Incorrect format of file <%s>.\n" RESET, filename);
+    printf(BOLD_RED "Expansion must be <%s>\n" RESET, exp);
+
+    return false;
 }
 
 size_t StringsParser(char * buffer, char diffElem, char ** index) {
@@ -223,7 +268,7 @@ int ReadFile(const char filename[], FileStat * fileInfo) {
     FILE * file_p = fopen(filename, "r");
 
     if (!file_p || (_stat(filename, &fileStat) == -1)) {
-        PrintErrno(OneginFilename, errno);
+        PrintErrno((*fileInfo).readFrom, errno);
         return false;
     }
 
