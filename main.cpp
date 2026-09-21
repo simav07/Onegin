@@ -59,9 +59,9 @@ int main(int argc, char * argv[]) {
     if (!readingResult) return false;
 
     PrintBeautyText(fileInfo.printTo, "Standard Onegin", fileInfo);
-    QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
-    PrintBeautyText(fileInfo.printTo, "Sorted Onegin", fileInfo);
     qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
+    PrintBeautyText(fileInfo.printTo, "Sorted Onegin", fileInfo);
+    QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
     PrintBeautyText(fileInfo.printTo, "Reverse-sorted Onegin", fileInfo);
 
     return true;
@@ -210,44 +210,35 @@ int CompareAlpha(const void * Str1, const void * Str2) {
 }
 
 int CompareAlphaReverse(const void * Str1, const void * Str2) {
-
     ASSERT(Str1);
     ASSERT(Str2);
 
     const char * str1 = *(const char * const *)Str1;
     const char * str2 = *(const char * const *)Str2;
 
-    size_t LenStr1 = strlen(str1);
-    size_t LenStr2 = strlen(str2);
+    int i = (int)strlen(str1) - 1;
+    int j = (int)strlen(str2) - 1;
 
-    if ((LenStr1 <= 0) || (LenStr2 <= 0)) return 0;
-
-    int i = (int)LenStr1;
-    int j = (int)LenStr2;
-
-    while ((i >= 0) && (j >= 0)) {
-
-        ASSERT((i <= (int)LenStr1));
-        ASSERT((j <= (int)LenStr2));
-
-        if (!isalpha(str1[i])) {
-            i--;
-            continue;
-        }
-        if (!isalpha(str2[j])) {
-            j--;
-            continue;
-        }
-        ASSERT((i >= 0 && j >= 0));
-
-        int comp = CompareUp(tolower(str1[i]), tolower(str2[j]));
-        
-        if (comp != 0) return comp;
-
+    while (i >= 0) {
+        if (isalpha((unsigned char)str1[i])) break;
         i--;
+    }
+    while (j >= 0) {
+        if (isalpha((unsigned char)str2[j])) break;
         j--;
     }
-    return false;
+
+    while (i >= 0 && j >= 0) {
+        int a = tolower((unsigned char)str1[i]);
+        int b = tolower((unsigned char)str2[j]);
+
+        if (a != b) return a - b;
+
+        do { i--; } while (i >= 0 && !isalpha((unsigned char)str1[i]));
+        do { j--; } while (j >= 0 && !isalpha((unsigned char)str2[j]));
+    }
+
+    return i - j;
 }
 
 int CompareUp(const int a, const int b) {
