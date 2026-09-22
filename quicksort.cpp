@@ -27,9 +27,8 @@ void QuickSort(char ** data, int leftIndex, int rightIndex, int (*Compare)(const
         if (Compare((const void *)leftElem, (const void *)firstElem) > 0) {
             if (Compare((const void *)rightElem, (const void *)firstElem) < 0) {
 
-                LOGGING("Call ChangePointers and send 1 elem = %p and second elem = %p", data[leftIndex], data[rightIndex]);
                 ChangePointers(&data[leftIndex], &data[rightIndex]);
-                LOGGING("Now 1 elem = %p, 2 elem = %p", data[leftIndex], data[rightIndex]);
+                // LOGGING("Now 1 elem = %p, 2 elem = %p", data[leftIndex], data[rightIndex]);
                 leftIndex++;
                 rightIndex--;
             }
@@ -42,13 +41,13 @@ void QuickSort(char ** data, int leftIndex, int rightIndex, int (*Compare)(const
         }
     }
 
-    LOGGING("Call ChangePointers and send 1 elem = %p and second elem = %p", data[firstIndex], data[rightIndex]);
+    // LOGGING("Call ChangePointers and send 1 elem = %p and second elem = %p", data[firstIndex], data[rightIndex]);
     ChangePointers(&data[firstIndex], &data[rightIndex]);
-    LOGGING("Now 1 elem = %p, 2 elem = %p", data[firstIndex], data[rightIndex]);
+    // LOGGING("Now 1 elem = %p, 2 elem = %p", data[firstIndex], data[rightIndex]);
     
-    LOGGING("Call QuickSort and send leftIndex = %p, rightIndex = %p", firstIndex, rightIndex - 1);
+    // LOGGING("Call QuickSort and send leftIndex = %p, rightIndex = %p", firstIndex, rightIndex - 1);
     QuickSort(data, firstIndex, rightIndex - 1, Compare);
-    LOGGING("Call QuickSort and send leftIndex = %p, rightIndex = %p", rightIndex + 1, lastIndex);
+    // LOGGING("Call QuickSort and send leftIndex = %p, rightIndex = %p", rightIndex + 1, lastIndex);
     QuickSort(data, rightIndex + 1, lastIndex, Compare);
 }
 
