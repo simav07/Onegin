@@ -2,11 +2,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// TODO
-// 1. Logging to .html file
-// 2. Beauty text print to .html
-
-// All used file information
+//! All used file information
 struct FileStat {
     char * text_ptr = NULL;
     char ** index = {};
@@ -17,35 +13,35 @@ struct FileStat {
     char * printTo  = NULL;
 };
 
-// Get filenames from console (stdin)
+//! Get filenames from console (stdin)
 int GetFilenameStd(int argc, char * argv[], FileStat * fileInfo);
 
-// Format validation
+//! Format validation
 int CheckFileFormat(const char filename[], const char exp[]);
 
-// Fill buffer from file
+//! Fill buffer from file
 int ReadFile(const char filename[], FileStat * fileInfo);
 
-// Get indexes and fill massiv of indexes
+//! Get indexes and fill massiv of indexes
 void FillIndexes(FileStat * fileInfo);
 size_t StringsParser(char * buffer, char diffElem, char ** index);
 size_t CountElems(const char * string, int Elem);
 
-// Printing
+//! Printing
 void PrintStrings(FILE * stream, char ** index_ptr, size_t nStrings);
 void PrintErrno(const char filename[], int err_inf);
+//! Clean file
+void CleanFile(const char filename[]);
 
-// Comparators
+//! Comparators
 int CompareUp(const size_t a, const size_t b);
 int CompareAlpha(const void * Str1, const void * Str2);
 int CompareAlphaReverse(const void * Str1, const void * Str2);
 int CompareUpPtr(const void * ptr1, const void * ptr2);
 
-// Cool print
+//! Cool print
 void PrintBeautyText(const char filename[], const char title[], FileStat fileInfo);
-
-const size_t MAX_LEN_LINE = 5000;
-const size_t MAX_N_LINES = 100;
+void SetBackground(const char htmlFilename[], const char ImageName[]);
 
 int main(int argc, char * argv[]) {
 
@@ -58,6 +54,8 @@ int main(int argc, char * argv[]) {
     
     int readingResult = ReadFile(fileInfo.readFrom, &fileInfo);
     if (!readingResult) return false;
+
+
 
     QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
     PrintBeautyText(fileInfo.printTo, "Sorted Onegin", fileInfo);
@@ -81,6 +79,8 @@ int GetFilenameStd(int argc, char * argv[], FileStat * fileInfo) {
 
             (*fileInfo).readFrom = argv[2];
             (*fileInfo).printTo  = argv[4];
+            CleanFile((*fileInfo).printTo);
+            SetBackground((*fileInfo).printTo, "onegin_background.jpg");
 
             return true;
         }
@@ -106,6 +106,7 @@ int CheckFileFormat(const char filename[], const char exp[]) {
     return false;
 }
 
+//! Splits the file's strings from fileInfo.text_ptr at a specified char - "diffElem" 
 size_t StringsParser(char * buffer, char diffElem, char ** index) {
     
     ASSERT(buffer);
@@ -247,7 +248,7 @@ int CompareUp(const size_t a, size_t  b) {
     ASSERT(a);
     ASSERT(b);
 
-    return (a-b);
+    return (int)(a-b);
 }
 
 int CompareUpPtr(const void * ptr1, const void * ptr2) {
@@ -321,14 +322,44 @@ void PrintBeautyText(const char filename[], const char title[], FileStat fileInf
     if (!file_p) return;
 
     fprintf(file_p, "<pre>\n");
+
     fprintf(file_p, "<hr style=\"border: none; height: 2px; background-color: #333; width: 80%;\">");
     fprintf(file_p, "<h1 style=\"text-align: center; font-family: 'Times New Roman', Times, serif; font-size: 38px; "
-                    "font-weight: bold; background: linear-gradient(45deg, #262729, #dee5e4); -webkit-background-clip: text; "
+                    "font-weight: bold; background: linear-gradient(45deg, #262729, #3f4040); -webkit-background-clip: text; "
                     "-webkit-text-fill-color: transparent; background-clip: text;\">%s</h1>\n", title);
     fprintf(file_p, "<hr style=\"border: none; height: 2px; background-color: #333; width: 80%;\">");
-    fprintf(file_p, "<p style=\"text-align: center;\">");
+    fprintf(file_p, "<p style=\"text-align: center; font-family: 'Times New Roman', Times, serif;\">");
     PrintStrings(file_p, fileInfo.index, fileInfo.nLines);
     fprintf(file_p, "</p>\n");
+
+    fclose(file_p);
+}
+
+void CleanFile(const char filename[]) {
+
+    ASSERT(filename);
+    fopen(filename, "w");
+
+}
+
+void SetBackground(const char htmlFilename[], const char ImageName[]) {
+
+    ASSERT(htmlFilename);
+    ASSERT(ImageName);
+
+    FILE * file_p = fopen(htmlFilename, "a");
+
+    fprintf(file_p, "<style>"
+    "body { "
+        "background-image: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), url('");
+    fprintf(file_p, "%s", ImageName);
+    fprintf(file_p, "');"
+        "background-size: cover;"
+        "background-repeat: no-repeat;"
+        "background-position: center;"
+        "background-attachment: fixed;"
+    "}"
+    "</style>");
 
     fclose(file_p);
 }
