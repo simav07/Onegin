@@ -10,9 +10,9 @@ A console application written in C that reads a text file (Alexander Pushkin's p
 - [Key Features](#key-features)
 - [Project Structure](#project-structure)
 - [Usage](#usage)
-- [Algorithm](#algorithm)
+- [Algorithms](#algorithms)
 - [Notes](#notes)
-- [License](#license)
+- [Examples](#examples)
 
 ---
 
@@ -96,3 +96,12 @@ You should use only 4 arguments.
 - The output is formatted as an HTML document using inline CSS styles.
 
 - Building the project requires including the header.h header file, which presumably defines the ASSERT, BOLR_RED (and another colors), RESET macros and the QuickSort function.
+
+## Examples
+**You can see how HTML file with sorted Onegin looks like:**
+
+![Sorted Onegin by the first letters](pictures/onegin_sorted.png)
+
+**The great original text of this russian poem looks like:**
+
+![Standard text of Onegin](pictures/onegin_stand.png)
