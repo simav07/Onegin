@@ -43,26 +43,38 @@ int CompareUpPtr(const void * ptr1, const void * ptr2);
 void PrintBeautyText(const char filename[], const char title[], FileStat fileInfo);
 void SetBackground(const char htmlFilename[], const char ImageName[]);
 
-int main(int argc, char * argv[]) {
+//! Write foolish verse (take random strings from reverse-sorted text)
+//! Use only for reverse-sorted text!
+void MakeFoolishVerse(FileStat fileInfo, FileStat * foolishVerse, size_t nLinesVerse);
+int GetRhymeString(size_t firstRandIndex, FileStat fileInfo, size_t * secondRandIndex, int nLetters);
+void MakeVerses(const char filename[], unsigned int nVerses, FileStat fileInfo, FileStat * foolishVerse, size_t nLinesVerse);
+
+int main(const int argc, char * argv[]) {
 
     ASSERT(argv);
     ASSERT((argc > 0));
 
     FileStat fileInfo = {};
 
+    FileStat foolishVerse = {};
+
     if (!GetFilenameStd(argc, argv, &fileInfo)) return false;
     
     int readingResult = ReadFile(fileInfo.readFrom, &fileInfo);
     if (!readingResult) return false;
 
-
-
     QuickSort(fileInfo.index, 0, int(fileInfo.nLines-1), CompareAlpha);
     PrintBeautyText(fileInfo.printTo, "Sorted Onegin", fileInfo);
     qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareAlphaReverse);
     PrintBeautyText(fileInfo.printTo, "Reverse-sorted Onegin", fileInfo);
+
+    // MakeFoolishVerse(fileInfo, &foolishVerse, 16);
+    // PrintBeautyText("Verses.html", "Foolish Verse", foolishVerse);
+    MakeVerses("Verses.html", 5, fileInfo, &foolishVerse, 16);
+
     qsort(fileInfo.index, fileInfo.nLines, sizeof(char *), CompareUpPtr);
     PrintBeautyText(fileInfo.printTo, "Standard Onegin", fileInfo);
+    printf(BOLD_GREEN "Successful sorting!\n" RESET);
     return true;
 }
 
@@ -252,6 +264,7 @@ int CompareUp(const size_t a, size_t  b) {
 }
 
 int CompareUpPtr(const void * ptr1, const void * ptr2) {
+
     const char * s1 = *(const char * const *)ptr1;
     const char * s2 = *(const char * const *)ptr2;
 
@@ -314,9 +327,8 @@ void PrintBeautyText(const char filename[], const char title[], FileStat fileInf
 
     ASSERT(filename);
     ASSERT(title);
-    ASSERT(fileInfo.text_ptr);
+    // ASSERT(fileInfo.text_ptr);
     ASSERT(fileInfo.index);
-    ASSERT(fileInfo.text_ptr);
 
     FILE * file_p = fopen(filename, "a");
     if (!file_p) return;
@@ -362,4 +374,104 @@ void SetBackground(const char htmlFilename[], const char ImageName[]) {
     "</style>");
 
     fclose(file_p);
+}
+
+void MakeFoolishVerse(FileStat fileInfo, FileStat * foolishVerse, size_t nLinesVerse) {
+
+    ASSERT((nLinesVerse > 0));
+
+    (*foolishVerse).nLines = nLinesVerse;
+    (*foolishVerse).index = (char **)calloc(nLinesVerse + 1, sizeof(char *));
+    // *((*foolishVerse).index + nLinesVerse) = ;
+
+    size_t i = 0;
+
+    while (i < nLinesVerse) {
+
+        // Find random string
+        size_t firstRandIndex = (size_t)((double)(fileInfo.nLines-2)*rand()/(RAND_MAX + 1.0));
+        char * firstRandString = fileInfo.index[firstRandIndex];
+        char * secondRandString = NULL;
+
+        // Write only one string if it's the last index
+        if (i == (nLinesVerse - 1)) {
+            (*foolishVerse).index[i] = fileInfo.index[firstRandIndex];
+            continue;
+        }
+
+        // String must be longer then 10 symbols
+        size_t firstLength = strlen(firstRandString);
+        if (firstLength < 25) continue; // make const
+
+        else if (i < (nLinesVerse - 1)) {
+
+            // Get second string (near)
+            size_t secondRandIndex = 0;
+            if (!GetRhymeString(firstRandIndex, fileInfo, &secondRandIndex, 5)) return; // make const
+
+            secondRandString = fileInfo.index[secondRandIndex];
+            //continue;
+        }
+        else return;
+    
+        if (firstRandString && secondRandString) {
+
+            (*foolishVerse).index[i]   = firstRandString;
+            (*foolishVerse).index[i+1] = secondRandString;
+            i += 2;
+            continue;
+        }
+        i++;
+    }
+}
+
+int GetRhymeString(size_t firstRandIndex, FileStat fileInfo, size_t * secondRandIndex, int nLetters) {
+
+    ASSERT(fileInfo.index);
+
+    if (firstRandIndex + 1 == fileInfo.nLines) return false;
+
+    size_t nLines = fileInfo.nLines;
+
+    size_t firstLength = strlen(fileInfo.index[firstRandIndex]);
+
+    const char * str1 = fileInfo.index[firstRandIndex];
+    const char * endOfString1 = str1 + firstLength - 1 - nLetters;
+
+    // const char * endOfString1 = fileInfo.text_ptr + firstRandIndex + firstLength - 1 - nLetters;
+    
+    size_t secondIndex = firstRandIndex + 1;
+
+    while (secondIndex <= (nLines-1)) {
+
+        size_t secondLength = strlen(fileInfo.index[secondIndex]);
+
+        const char * str2 = fileInfo.index[firstRandIndex];
+        const char * endOfString2 = str2 + secondLength - 1 - nLetters;
+
+        // const char * endOfString2 = fileInfo.text_ptr + secondIndex + secondLength - 1 - nLetters;
+
+        ASSERT(endOfString1);
+        ASSERT(endOfString2);
+
+        if (!strcmp(endOfString1, endOfString2)) {
+            *secondRandIndex = secondIndex;
+            return true;
+        }
+        secondIndex++;
+    }
+
+    *secondRandIndex = secondIndex;
+    return true;
+}
+
+void MakeVerses(const char filename[], unsigned int nVerses, FileStat fileInfo, FileStat * foolishVerse, size_t nLinesVerse) {
+
+    for (unsigned int i = 0; i < nVerses; i++) {
+
+        MakeFoolishVerse(fileInfo, foolishVerse, nLinesVerse);
+        PrintBeautyText(filename, "Foolish Verse", *foolishVerse);
+
+    }
+
 }
